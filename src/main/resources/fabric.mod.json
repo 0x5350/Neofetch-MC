@@ -1,41 +1,31 @@
 {
-	"schemaVersion": 1,
-	"id": "neofetch-mc",
-	"version": "${version}",
-	"name": "Neofetch MC",
-	"description": "This is an example description! Tell everyone what your mod is about!",
-	"authors": [
-		"Me!"
-	],
-	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
-	},
-	"license": "CC0-1.0",
-	"icon": "assets/neofetch-mc/icon.png",
-	"environment": "*",
-	"entrypoints": {
-		"main": [
-			"pather.neofetchmc.ExampleMod"
-		],
-		"client": [
-			"pather.neofetchmc.ExampleModClient"
-		]
-	},
-	"mixins": [
-		"neofetch-mc.mixins.json",
-		{
-			"config": "neofetch-mc.client.mixins.json",
-			"environment": "client"
-		}
-	],
-	"depends": {
-		"fabricloader": ">=0.14.22",
-		"minecraft": "~1.20.1",
-		"java": ">=17",
-		"fabric-api": "*"
-	},
-	"suggests": {
-		"another-mod": "*"
-	}
+    "schemaVersion": 1,
+    "id": "neofetch-mc",
+    "version": "${version}",
+    "name": "Neofetch MC",
+    "description": "Server-side Minecraft Fabric mod to access Neofetch through an in-game command",
+    "authors": [
+        "Shalin Pather"
+    ],
+    "contact": {
+        "homepage": "https://github.com/0x5350/Neofetch-MC",
+        "sources": "https://github.com/0x5350/Neofetch-MC"
+    },
+    "license": "CC0-1.0",
+    "icon": "assets/neofetch-mc/icon.png",
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "pather.neofetchmc.NeofetchMC"
+        ]
+    },
+    "depends": {
+        "fabricloader": ">=0.14.21",
+        "minecraft": "~1.20.1",
+        "java": ">=17",
+        "fabric-api": "*"
+    },
+    "suggests": {
+        "another-mod": "*"
+    }
 }
