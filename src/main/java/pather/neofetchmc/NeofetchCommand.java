@@ -35,12 +35,23 @@ public class NeofetchCommand {
     }
 
     private static String getOutput() {
-        return (getOutput(NEOFETCH_LOGO_ONLY).replaceAll(WHITESPACE_LINE_REGEX, "")
-                + '\n'
-                + getOutput(NEOFETCH_INFO_ONLY).replaceAll(WHITESPACE_LINE_REGEX, ""))
-                .replaceAll(NEOFETCH_ESCAPE_REGEX, "");
-        // Only temporary: remove colour escape sequences.
-        // TODO: Add full colour support in future.
+        String fullOutput = (
+            getOutput(NEOFETCH_LOGO_ONLY)
+            .replaceAll(NEOFETCH_ESCAPE_REGEX, "")
+            .replaceAll(WHITESPACE_LINE_REGEX, "")
+            + '\n'
+            + getOutput(NEOFETCH_INFO_ONLY)
+            .replaceAll(NEOFETCH_ESCAPE_REGEX, "")
+            .replaceAll(WHITESPACE_LINE_REGEX, "")
+        );
+        
+        /* This is only a temporary fix to remove all of Neofetch's terminal
+         * escape sequences. In a future update, the logic will be added to
+         * process the output from Neofetch into a format suitable for Minecraft.
+         * TODO: Add logic to convert Neofetch output to formatted Minecraft text.
+         */
+
+        return fullOutput;
     }
 
     private static String getOutput(String neofetchArg) {
