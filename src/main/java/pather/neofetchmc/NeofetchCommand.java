@@ -79,23 +79,29 @@ public class NeofetchCommand {
 
     private static String getOutput() {
         return getMinecraftFormattedOutput(NEOFETCH_LOGO_ONLY)
-        + '\n'
-        + getMinecraftFormattedOutput(NEOFETCH_INFO_ONLY);
+            .replaceAll(REGEX_ANSI_ESCAPE, "")
+            .replaceAll(REGEX_WHITESPACE, "")
+            + '\n'
+            + getMinecraftFormattedOutput(NEOFETCH_INFO_ONLY)
+            .replaceAll(REGEX_ANSI_ESCAPE, "")
+            .replaceAll(REGEX_WHITESPACE, "");
     }
 
     private static String getMinecraftFormattedOutput(String neofetchArg) {
         String[] splitOutput = getSplitOutput(neofetchArg);
 
-        //Perhaps subject to future performance optimisations.
-        for(int i = 0; i < splitOutput.length; i++) {
+        // Perhaps subject to future performance optimisations.
+        for (int i = 0; i < splitOutput.length; i++) {
             if (ANSI_TO_MINECRAFT.containsKey(splitOutput[i])) {
                 splitOutput[i] = ANSI_TO_MINECRAFT.get(splitOutput[i]);
             }
         }
 
-        return String.join("", splitOutput)
-        .replaceAll(REGEX_ANSI_ESCAPE, "")
-        .replace(REGEX_WHITESPACE, "");
+        return String.join("", splitOutput);
+        /*
+         * We're only converting the relevant formatting escapes to Minecraft
+         * escapes here. The rest will be processed out later.
+         */
     }
 
     private static String[] getSplitOutput(String neofetchArg) {
