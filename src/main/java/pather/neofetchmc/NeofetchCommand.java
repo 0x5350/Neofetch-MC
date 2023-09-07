@@ -4,6 +4,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.mojang.brigadier.CommandDispatcher;
@@ -23,6 +25,8 @@ public class NeofetchCommand {
 
     public static final String REGEX_ANSI_COLOUR = "\\u001B\\[[0-9]{1,}m";
     public static final String REGEX_ANSI_ESCAPE = "\u001B\\[[;?\\d]*[ -/]*[@-~]";
+    public static final String REGEX_ANSI_NO_CONSUME = "(?<=" + REGEX_ANSI_COLOUR + ")|(?=" + REGEX_ANSI_COLOUR + ")";
+    public static final String REGEX_MINECRAFT_ESCAPE = "\\u00A7[a-z]";
     public static final String REGEX_WHITESPACE = "(?m)^[ \t]*\r?\n";
 
     public static final String ANSI_ESCAPE_RESET = "\033[0m";
@@ -78,37 +82,68 @@ public class NeofetchCommand {
     }
 
     private static String getOutput() {
-        return getMinecraftFormattedOutput(NEOFETCH_LOGO_ONLY)
-            .replaceAll(REGEX_ANSI_ESCAPE, "")
-            .replaceAll(REGEX_WHITESPACE, "")
-            + '\n'
-            + getMinecraftFormattedOutput(NEOFETCH_INFO_ONLY)
-            .replaceAll(REGEX_ANSI_ESCAPE, "")
-            .replaceAll(REGEX_WHITESPACE, "");
+        return getLogoMinecraftFormatted() 
+            + "\n\n"
+            + getInfoMinecraftFormatted();
     }
 
-    private static String getMinecraftFormattedOutput(String neofetchArg) {
-        String[] splitOutput = getSplitOutput(neofetchArg);
+    private static String getLogoMinecraftFormatted() {
+        String logo = getRawOutput(NEOFETCH_LOGO_ONLY);
+        logo = convertAnsiToMinecraft(logo);
+        logo = removeExtraneousCharacters(logo);
+        logo = logo.replaceAll(MINECRAFT_ESCAPE_RESET, "");
+        logo = addEnclosingEscapes(logo);
+        return logo;
+    }
 
-        // Perhaps subject to future performance optimisations.
-        for (int i = 0; i < splitOutput.length; i++) {
-            if (ANSI_TO_MINECRAFT.containsKey(splitOutput[i])) {
-                splitOutput[i] = ANSI_TO_MINECRAFT.get(splitOutput[i]);
+    private static String getInfoMinecraftFormatted() {
+        String info = getRawOutput(NEOFETCH_INFO_ONLY);
+        info = convertAnsiToMinecraft(info);
+        info = removeExtraneousCharacters(info);
+        return info;
+    }
+
+    private static String removeExtraneousCharacters(String in) {
+        in = in.replaceAll(REGEX_ANSI_ESCAPE, "")
+            .replaceAll(REGEX_WHITESPACE, "");
+        in = in.substring(0, in.length() - 1); //Extraneous newline
+        return in;
+    }
+
+    private static String convertAnsiToMinecraft(String ansiFormatted) {
+        String[] split = ansiFormatted.split(REGEX_ANSI_NO_CONSUME);
+
+        for (int i = 0; i < split.length; i++) {
+            if (ANSI_TO_MINECRAFT.containsKey(split[i])) {
+                split[i] = ANSI_TO_MINECRAFT.get(split[i]);
             }
         }
 
-        return String.join("", splitOutput);
-        /*
-         * We're only converting the relevant formatting escapes to Minecraft
-         * escapes here. The rest will be processed out later.
-         */
+        return String.join("", split);
     }
 
-    private static String[] getSplitOutput(String neofetchArg) {
-        String splitRegex = "(?<=" + REGEX_ANSI_COLOUR + ")|(?=" + REGEX_ANSI_COLOUR + ")";
-        String raw = getRawOutput(neofetchArg);
-        String[] rawSplit = raw.split(splitRegex);
-        return rawSplit;
+    private static String addEnclosingEscapes(String minecraftFormatted) {
+        /* Add enclosing characters */
+        Pattern p = Pattern.compile(REGEX_MINECRAFT_ESCAPE);
+        String[] split = minecraftFormatted.split("\n");
+
+        for (int i = 1; i < split.length; i++) {
+            Matcher m = p.matcher(split[i - 1]);
+            String lastMatch = null;
+
+            while (m.find()) {
+                lastMatch = m.group(m.groupCount());
+            }
+
+            split[i] = lastMatch + split[i];
+        }
+
+        for (int i = 0; i < split.length; i++) {
+            split[i] += MINECRAFT_ESCAPE_RESET;
+        }
+
+        minecraftFormatted = String.join("\n", split);
+        return minecraftFormatted;
     }
 
     private static String getRawOutput(String neofetchArg) {
