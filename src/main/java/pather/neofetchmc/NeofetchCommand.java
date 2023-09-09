@@ -23,6 +23,8 @@ public class NeofetchCommand {
     public static final String NEOFETCH_INFO_ONLY = "--off";
     public static final String NEOFETCH_LOGO_ONLY = "-L";
 
+    public static final int LENGTH_COLOUR_BAR = 42;
+
     public static final String REGEX_ANSI_COLOUR = "\\u001B\\[[0-9]{1,}m";
     public static final String REGEX_ANSI_ESCAPE = "\u001B\\[[;?\\d]*[ -/]*[@-~]";
     public static final String REGEX_ANSI_NO_CONSUME = "(?<=" + REGEX_ANSI_COLOUR + ")|(?=" + REGEX_ANSI_COLOUR + ")";
@@ -100,6 +102,7 @@ public class NeofetchCommand {
         String info = getRawOutput(NEOFETCH_INFO_ONLY);
         info = convertAnsiToMinecraft(info);
         info = removeExtraneousCharacters(info);
+        info = info.substring(0, info.length() - LENGTH_COLOUR_BAR);
         return info;
     }
 
