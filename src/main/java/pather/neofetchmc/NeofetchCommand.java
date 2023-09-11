@@ -23,7 +23,11 @@ public class NeofetchCommand {
     public static final String NEOFETCH_INFO_ONLY = "--off";
     public static final String NEOFETCH_LOGO_ONLY = "-L";
 
-    public static final int LENGTH_COLOUR_BAR = 42;
+    public static final char[] COLOUR_BAR_TOP = {'0', '4', '2', 'g', '1', '5', '3', '7'};
+    public static final char[] COLOUR_BAR_BOTTOM = {'7', 'c', 'a', 'e', '9', 'd', 'b', 'f'};
+    public static final String CHAR_BOX = "\u2588";
+    public static final String STRING_BOX = CHAR_BOX + CHAR_BOX + CHAR_BOX;
+    public static final int LENGTH_COLOUR_BAR = 42; //With extraneous whitespace
 
     public static final String REGEX_ANSI_COLOUR = "\\u001B\\[[0-9]{1,}m";
     public static final String REGEX_ANSI_ESCAPE = "\u001B\\[[;?\\d]*[ -/]*[@-~]";
@@ -31,31 +35,33 @@ public class NeofetchCommand {
     public static final String REGEX_MINECRAFT_ESCAPE = "\\u00A7[a-z]";
     public static final String REGEX_WHITESPACE = "(?m)^[ \t]*\r?\n";
 
-    public static final String ANSI_ESCAPE_RESET = "\033[0m";
-    public static final String ANSI_ESCAPE_ITALIC = "\033[3m";
-    public static final String ANSI_ESCAPE_UNDERLINE = "\033[4m";
-    public static final String ANSI_ESCAPE_BLACK = "\033[30m";
-    public static final String ANSI_ESCAPE_RED = "\033[31m";
-    public static final String ANSI_ESCAPE_GREEN = "\033[32m";
-    public static final String ANSI_ESCAPE_YELLOW = "\033[33m";
-    public static final String ANSI_ESCAPE_BLUE = "\033[34m";
-    public static final String ANSI_ESCAPE_MAGENTA = "\033[35m";
-    public static final String ANSI_ESCAPE_CYAN = "\033[36m";
-    public static final String ANSI_ESCAPE_WHITE = "\033[37m";
+    public static final String ANSI_ESCAPE = "\033[";
+    public static final String ANSI_ESCAPE_RESET = ANSI_ESCAPE + "0m";
+    public static final String ANSI_ESCAPE_ITALIC = ANSI_ESCAPE + "3m";
+    public static final String ANSI_ESCAPE_UNDERLINE = ANSI_ESCAPE + "4m";
+    public static final String ANSI_ESCAPE_BLACK = ANSI_ESCAPE + "30m";
+    public static final String ANSI_ESCAPE_RED = ANSI_ESCAPE + "31m";
+    public static final String ANSI_ESCAPE_GREEN = ANSI_ESCAPE + "32m";
+    public static final String ANSI_ESCAPE_YELLOW = ANSI_ESCAPE + "33m";
+    public static final String ANSI_ESCAPE_BLUE = ANSI_ESCAPE + "34m";
+    public static final String ANSI_ESCAPE_MAGENTA = ANSI_ESCAPE + "35m";
+    public static final String ANSI_ESCAPE_CYAN = ANSI_ESCAPE + "36m";
+    public static final String ANSI_ESCAPE_WHITE = ANSI_ESCAPE + "37m";
 
     // Some custom names here, for consistency.
     // https://minecraft.fandom.com/wiki/Formatting_codes
-    public static final String MINECRAFT_ESCAPE_RESET = "\u00A7r";
-    public static final String MINECRAFT_ESCAPE_ITALIC = "\u00A7o";
-    public static final String MINECRAFT_ESCAPE_UNDERLINE = "\u00A7n";
-    public static final String MINECRAFT_ESCAPE_BLACK = "\u00A70";
-    public static final String MINECRAFT_ESCAPE_RED = "\u00A7c";
-    public static final String MINECRAFT_ESCAPE_GREEN = "\u00A7a";
-    public static final String MINECRAFT_ESCAPE_YELLOW = "\u00A7e";
-    public static final String MINECRAFT_ESCAPE_BLUE = "\u00A79";
-    public static final String MINECRAFT_ESCAPE_MAGENTA = "\u00A75";
-    public static final String MINECRAFT_ESCAPE_CYAN = "\u00A7b";
-    public static final String MINECRAFT_ESCAPE_WHITE = "\u00A7f";
+    public static final String MINECRAFT_ESCAPE = "\u00A7";
+    public static final String MINECRAFT_ESCAPE_RESET = MINECRAFT_ESCAPE + 'r';
+    public static final String MINECRAFT_ESCAPE_ITALIC = MINECRAFT_ESCAPE + 'o';
+    public static final String MINECRAFT_ESCAPE_UNDERLINE = MINECRAFT_ESCAPE + 'n';
+    public static final String MINECRAFT_ESCAPE_BLACK = MINECRAFT_ESCAPE + '0';
+    public static final String MINECRAFT_ESCAPE_RED = MINECRAFT_ESCAPE + 'c';
+    public static final String MINECRAFT_ESCAPE_GREEN = MINECRAFT_ESCAPE + 'a';
+    public static final String MINECRAFT_ESCAPE_YELLOW = MINECRAFT_ESCAPE + 'e';
+    public static final String MINECRAFT_ESCAPE_BLUE = MINECRAFT_ESCAPE + '9';
+    public static final String MINECRAFT_ESCAPE_MAGENTA = MINECRAFT_ESCAPE + '5';
+    public static final String MINECRAFT_ESCAPE_CYAN = MINECRAFT_ESCAPE + 'b';
+    public static final String MINECRAFT_ESCAPE_WHITE = MINECRAFT_ESCAPE + 'f';
 
     public static final HashMap<String, String> ANSI_TO_MINECRAFT = new HashMap<>();
     static {
@@ -84,9 +90,11 @@ public class NeofetchCommand {
     }
 
     private static String getOutput() {
-        return getLogoMinecraftFormatted() 
-            + "\n\n"
-            + getInfoMinecraftFormatted();
+        return getLogoMinecraftFormatted()
+                + "\n\n"
+                + getInfoMinecraftFormatted()
+                + "\n\n"
+                + getColourBar();
     }
 
     private static String getLogoMinecraftFormatted() {
@@ -106,10 +114,30 @@ public class NeofetchCommand {
         return info;
     }
 
+    private static String getColourBar() {
+        StringBuilder colourBar = new StringBuilder();
+
+        for (char c: COLOUR_BAR_TOP) {
+            colourBar.append(MINECRAFT_ESCAPE);
+            colourBar.append(c);
+            colourBar.append(STRING_BOX);
+        }
+
+        colourBar.append('\n');
+
+        for (char c: COLOUR_BAR_BOTTOM) {
+            colourBar.append(MINECRAFT_ESCAPE);
+            colourBar.append(c);
+            colourBar.append(STRING_BOX);
+        }
+
+        return colourBar.toString();
+    }
+
     private static String removeExtraneousCharacters(String in) {
         in = in.replaceAll(REGEX_ANSI_ESCAPE, "")
-            .replaceAll(REGEX_WHITESPACE, "");
-        in = in.substring(0, in.length() - 1); //Extraneous newline
+                .replaceAll(REGEX_WHITESPACE, "");
+        in = in.substring(0, in.length() - 1); // Extraneous newline
         return in;
     }
 
